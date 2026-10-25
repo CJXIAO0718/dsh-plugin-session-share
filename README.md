@@ -315,6 +315,29 @@ node tools/render-session.mjs --log session.v4.jsonl.zstd --out out.html --pick 
 
 遇到新的注入形态，往 `CONTEXT_MARKERS` 追加一条前缀即可；若新版 DSH 给了新的 `source.kind`，两者都不用改（结构信号优先）。
 
+## 权限与外部依赖（供市场审核核对）
+
+本插件声明 `engines.dsh = >=0.2.1-rc.2`、`engines.node = >=20`，**零运行时 npm 依赖**（`package.json` 无 `dependencies`，仅用 Node 内置与相对 import）。
+
+### 用到的能力（全部为必要能力，不申请额外权限）
+
+| 能力 | 用在哪里 | 具体范围 |
+|---|---|---|
+| 读文件 / 读会话 | Host 半包读取当前会话事件（经 DSH 的 `sessionQuery` / `sessionPersistence` 服务） | 只读，只读**当前会话**，不遍历其他会话、不读外部目录 |
+| 写文件 | ① agent 工具 `share_conversation_html` 把 HTML 写到 `<会话 cwd>/.dsh-share/`；② `install.ps1` 写 profile 的 `cordis.patch.yml`（写前自动备份） | 仅这两处，路径固定且可预测；不写系统目录、不写注册表 |
+| 网络 | 客户端 `fetch` 调用**本机同源**路由 `/api/session.shareHtml`、`/api/session.shareIndex` | 只连 localhost 的本 DSH 进程；**不访问任何第三方服务、不上传任何内容、无遥测** |
+
+### 外部服务
+
+**无。** 页面渲染完全在本机完成；生成物是自包含 HTML（无 CDN、无字体、无外部请求）。市场索引 `market/index.json` 只是分发用，不被插件在运行时访问。
+
+### 失败边界
+
+- 读不到会话：返回 404 短文本，不抛栈、不泄漏本机路径。
+- 渲染异常：返回 500 短文本，`console.warn` 记一条，会话本身不受影响。
+- 上传/网络类操作**不存在**；若客户端 `fetch` 失败，菜单内显示错误并退化为本机直下载。
+- 客户端半包加载失败**会导致 web boot 拒绝启动**（已在文首「已知致命风险」说明与应急步骤），这是 DSH 的机制，不是本插件额外请求权限。
+
 ## 隐私警告（请务必读）
 
 > **这是「脱敏」，不是「匿名化」。** 生成的 HTML 里依然是**完整对话正文**：你说过的需求、贴过的代码、文件路径、命令输出、用户名、内网地址、业务数据……脱敏只覆盖上表那十几类模式。

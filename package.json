@@ -33,7 +33,8 @@
     "url": "https://github.com/CJXIAO0718/dsh-plugin-session-share.git"
   },
   "engines": {
-    "node": ">=20"
+    "node": ">=20",
+    "dsh": ">=0.2.1-rc.2"
   },
   "dsh": {
     "engines": {
