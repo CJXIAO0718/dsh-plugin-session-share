@@ -1,5 +1,4 @@
 {
-  "_placeholder": "占位样例：url 里的 OWNER 与 40 个 0 的 commit 都不是真实值。首次发版请运行 node tools/make-index.mjs 重新生成（该字段会自动移除）。",
   "format": 1,
   "title": "Session Share 插件市场",
   "description": "会话分享插件的 git 分发索引：每个版本固定到仓库的一个 commit。",
@@ -22,8 +21,8 @@
           "publishTimestamp": 1762000000,
           "source": {
             "type": "git",
-            "url": "https://github.com/OWNER/dsh-plugin-session-share",
-            "commit": "0000000000000000000000000000000000000000"
+            "url": "https://github.com/CJXIAO0718/dsh-plugin-session-share",
+            "commit": "3c22c98a2e1ff7cc8d59a8d22119f8db77d34201"
           }
         }
       ]
