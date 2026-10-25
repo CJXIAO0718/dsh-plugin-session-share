@@ -1,0 +1,7 @@
+# 包内 bundle patch（供走 GUI / plugin_manager 的包依赖图安装路线使用）。
+# 顶层数组；新增插件必须用 insert 形式，写成裸行会被 warn 后丢弃。
+# name 用包名：bundle 路线通过依赖图解析，不需要绝对路径或 file URL。
+- insert:
+    - id: session-share-html
+      name: 'dsh-plugin-session-share'
+      config: {}

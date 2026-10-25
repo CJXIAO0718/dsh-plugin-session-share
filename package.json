@@ -1,0 +1,57 @@
+{
+  "name": "dsh-plugin-session-share",
+  "version": "0.1.0",
+  "description": "把 DSH 会话导出成单文件、离线可看、默认脱敏的 HTML 分享页。",
+  "license": "MIT",
+  "type": "module",
+  "main": "lib/index.js",
+  "exports": {
+    ".": "./lib/index.js",
+    "./client": "./lib/client.js",
+    "./locale/*.json": "./locale/*.json"
+  },
+  "files": [
+    "lib",
+    "locale",
+    "cordis.patch.yml",
+    "README.zh.md",
+    "LICENSE"
+  ],
+  "keywords": [
+    "dsh",
+    "dsh-plugin",
+    "deepseek-harness",
+    "session",
+    "transcript",
+    "share",
+    "html",
+    "export",
+    "redaction"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/CJXIAO718/dsh-plugin-session-share.git"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "dsh": {
+    "engines": {
+      "dsh": ">=0.2.1-rc.2"
+    },
+    "bundle": {
+      "patch": "./cordis.patch.yml"
+    },
+    "client": {
+      "platform": "web",
+      "inject": [
+        "@deepseek-ai/dsh-client-locale",
+        "@deepseek-ai/dsh-client-ui-conversation"
+      ]
+    }
+  },
+  "homepage": "https://github.com/CJXIAO718/dsh-plugin-session-share#readme",
+  "bugs": {
+    "url": "https://github.com/CJXIAO718/dsh-plugin-session-share/issues"
+  }
+}

@@ -1,0 +1,6 @@
+{
+  "meta": {
+    "title": "Session Share HTML",
+    "description": "Share a session as a single-file HTML page served by an authenticated read-only route."
+  }
+}
