@@ -1,9 +1,44 @@
 # dsh-plugin-session-share
 
+[![version](https://img.shields.io/badge/version-0.1.0-blue)](https://github.com/CJXIAO0718/dsh-plugin-session-share/blob/main/package.json)
+[![license](https://img.shields.io/badge/license-MIT-green)](LICENSE)
+[![DSH](https://img.shields.io/badge/DSH-%E2%89%A50.2.1--rc.2-4d6bfe)](https://github.com/CJXIAO0718/dsh-plugin-session-share)
+
 把任意一个 DSH 会话导出成**单文件、离线可打开**的 HTML 分享页（含时间线、折叠的工具调用、脱敏）。
 
 - 生成物是一份自包含 HTML：不依赖 JS/CDN/字体，双击就能读，可以直接发给别人。
 - 排版由 `lib/render.js` 负责；共享配置项见「配置项」。
+
+## 安装（30 秒）
+
+**方式 A：插件市场索引（推荐）**
+
+在 DSH 里打开「发现 / 设置 → 插件市场索引」，粘贴下面这个 URL，然后在市场里搜索 `Session Share` 安装：
+
+```text
+https://raw.githubusercontent.com/CJXIAO0718/dsh-plugin-session-share/main/market/index.json
+```
+
+**方式 B：直接按 git 地址安装**（等价，适合不想加索引的人）
+
+```text
+git+https://github.com/CJXIAO0718/dsh-plugin-session-share.git#3c22c98a2e1ff7cc8d59a8d22119f8db77d34201
+```
+
+> 这串是**固定到某个 commit** 的地址，由 `node tools/make-index.mjs` 生成；每个版本对应一个不同的 SHA。
+
+**方式 C：克隆到本地用脚本装**（开发者 / 离线）
+
+```powershell
+git clone https://github.com/CJXIAO0718/dsh-plugin-session-share.git
+cd dsh-plugin-session-share
+.\install.ps1 -WhatIf    # 先看它要写什么
+.\install.ps1            # 正式写入 profile 的 cordis.patch.yml（自动备份）
+```
+
+装完后**完全退出并重启 DSH**：客户端半包首次挂载必须重启才会出现在界面上（HMR 覆盖不到 `file://` 挂载的插件）。
+
+> ⚠️ 同一台机器上**不要同时**用「方式 C 的本地挂载」和「方式 A/B 的市场安装」——同一个包名出现两个活动来源会让客户端组合失败，界面可能起不来。切换前先 `install.ps1 -Uninstall`。
 
 ---
 
