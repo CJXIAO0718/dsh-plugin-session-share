@@ -14,7 +14,7 @@
     "lib",
     "locale",
     "cordis.patch.yml",
-    "README.zh.md",
+    "README.md",
     "LICENSE"
   ],
   "keywords": [

@@ -4,6 +4,8 @@
 [![license](https://img.shields.io/badge/license-MIT-green)](LICENSE)
 [![DSH](https://img.shields.io/badge/DSH-%E2%89%A50.2.1--rc.2-4d6bfe)](https://github.com/CJXIAO0718/dsh-plugin-session-share)
 
+> 中文文档（主）。English summary: export any DSH session as a single self-contained, offline-viewable HTML page — per-message picking, collapsed tool calls, default redaction.
+
 把任意一个 DSH 会话导出成**单文件、离线可打开**的 HTML 分享页（含时间线、折叠的工具调用、脱敏）。
 
 - 生成物是一份自包含 HTML：不依赖 JS/CDN/字体，双击就能读，可以直接发给别人。
@@ -170,7 +172,7 @@ DSH 的市场服务只读你配置的 `indexes`（默认空数组，空着时一
 
 ### 分发物里有什么（`files` 白名单）
 
-`files` 只放行 `lib`、`locale`、`cordis.patch.yml`、`README.zh.md`、`LICENSE`；`test/`、`tools/`、`docs/`、`*.ps1`、`.dsh-share/` 一律不进包。这既是将来上 npm 时的白名单，也让 `pnpm pack` 打出来的东西里不可能出现测试夹具，更不可能出现任何真实会话数据。
+`files` 只放行 `lib`、`locale`、`cordis.patch.yml`、`README.md`、`LICENSE`；`test/`、`tools/`、`docs/`、`*.ps1`、`.dsh-share/` 一律不进包。这既是将来上 npm 时的白名单，也让 `pnpm pack` 打出来的东西里不可能出现测试夹具，更不可能出现任何真实会话数据。
 
 ---
 

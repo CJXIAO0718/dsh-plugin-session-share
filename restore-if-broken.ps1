@@ -240,7 +240,7 @@ try {
     Say '搞定，接下来：'
     Say '  1) 重新启动 DSH 桌面端（先确认它已经完全退出）'
     Say '  2) 如果能正常打开，就说明配置已恢复正常'
-    Say '  3) 需要再试一次插件，先看 README.zh.md 的「已知致命风险」与「安装后验证」'
+    Say '  3) 需要再试一次插件，先看 README.md 的「已知致命风险」与「安装后验证」'
     Say ''
     if (-not $NoPause -and -not [Console]::IsInputRedirected) { [void](Read-Host '按回车键关闭') }
     exit 0
