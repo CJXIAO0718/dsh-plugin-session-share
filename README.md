@@ -181,7 +181,7 @@ DSH 的市场服务只读你配置的 `indexes`（默认空数组，空着时一
 | 用法 | 怎么做 | 适合 |
 | --- | --- | --- |
 | 会话头部按钮 | 在对话头部点「分享为 HTML」→ 预览 / 下载 | 手边就是那个会话 |
-| `/share` 命令 | 在输入框敲 `/share`（可加 `download`） | 只想快速拿到链接 |
+| `/share` 命令 | 在输入框敲 `/share`（可加 `download`） | 想快速在本机打开或下载 |
 | 离线 CLI | `node tools/render-session.mjs --log <日志> --out <out.html>` | 批量、脚本、AI 调用、无桌面端 |
 | 挑选部分对话 | 分享菜单第三项「选择对话后分享…」勾几条 → 预览 / 下载；或 CLI `--pick m12,m13` | 会话很长，只想发其中一两句 |
 
@@ -192,8 +192,8 @@ DSH 的市场服务只读你配置的 `indexes`（默认空数组，空着时一
 ### 2）`/share` 命令
 
 ```
-/share            生成可预览的分享链接
-/share download   生成可直接下载的链接
+/share            生成【本机】预览地址（只能在这台机器、这个已登录的浏览器里打开）
+/share download   生成【本机】下载地址（把文件存下来后，文件本身才可以发给别人）
 ```
 
 ### 3）离线 CLI（AI 可调用）
@@ -330,6 +330,7 @@ node tools/render-session.mjs --log session.v4.jsonl.zstd --out out.html --pick 
 - 只在 Windows + PowerShell 5.1 上验证过这两个 `*.ps1`；它们**必须保存为 UTF-8 with BOM**，否则 5.1 会按 ANSI 解码中文而报语法错误。
 - `.zstd` 解码依赖 Node 内置 zstd（Node >= 22.15 才有 `zlib.zstdDecompressSync`）；Node 20 上只能喂未压缩的 `.jsonl`。CLI 遇到无 zstd 的 Node 会直接给出中文提示。
 - 桌面端运行中，`dsh --profile desktop --dump-config` 会被拒绝（`profile is managed exclusively by the Electron application`）；这不是配置错误，插件页看到 `phase=active` 即可。
+- **不提供公开分享链接**：插件只产出 HTML 文件。`/share` 返回的地址是本机回环地址、且 `/api/*` 需要已登录的 owner 会话，**把它发给别人打不开**。要发给别人，请用「下载」拿到 `.html` 文件再发送。
 - 分享页是静态快照：生成之后会话再变化不会自动更新。
 - 子代理正文不展开：内部事件（ptc 派发、subagent 目录等）只按类型计数折叠。
 - 主题跟随系统的能力取决于浏览器 `prefers-color-scheme`。
