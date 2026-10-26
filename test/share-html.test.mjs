@@ -322,7 +322,7 @@ ok("C9 locale.register called once with sessionShareHtml", () => { assert.equal(
 const zhKeys = Object.keys(dictionaries.dictionaries.zh).sort();
 const enKeys = Object.keys(dictionaries.dictionaries.en).sort();
 ok("C10 zh/en key sets identical and non-empty", () => { assert.deepEqual(zhKeys, enKeys); assert.ok(zhKeys.length >= 4); });
-ok("C11 required keys present", () => assert.deepEqual(zhKeys, ["action.label", "error.failed", "menu.download", "menu.pick", "menu.preview", "picker.assistant", "picker.cancel", "picker.close", "picker.context", "picker.empty", "picker.generate", "picker.loadFailed", "picker.loading", "picker.noneSelected", "picker.selectAll", "picker.selectNone", "picker.selected", "picker.title", "picker.tools", "picker.you", "preview.close", "preview.download", "preview.title"]));
+ok("C11 required keys present", () => assert.deepEqual(zhKeys, ["action.label", "error.failed", "menu.connect", "menu.download", "menu.pick", "menu.preview", "menu.publishHost", "picker.assistant", "picker.cancel", "picker.close", "picker.context", "picker.empty", "picker.generate", "picker.loadFailed", "picker.loading", "picker.noneSelected", "picker.publish", "picker.selectAll", "picker.selectNone", "picker.selected", "picker.title", "picker.tools", "picker.you", "preview.close", "preview.download", "preview.title", "publish.close", "publish.copied", "publish.copy", "publish.copyFailed", "publish.failed", "publish.open", "publish.rateLimited", "publish.sub", "publish.title", "publish.tooLarge", "publish.unauthorized", "publish.unreachable", "settings.cancel", "settings.close", "settings.defaultMode", "settings.defaultModeHint", "settings.host", "settings.hostHint", "settings.hostRequired", "settings.intro", "settings.invalidHost", "settings.missing", "settings.modeDownload", "settings.modePreview", "settings.modePublish", "settings.reachable", "settings.save", "settings.saveFailed", "settings.saved", "settings.savedButUnreachable", "settings.saving", "settings.testing", "settings.title", "settings.token", "settings.tokenHint", "settings.tokenRequired", "settings.tokenStored"]));
 ok("C12 zh values are Simplified Chinese, en are not", () => { assert.equal(dictionaries.dictionaries.zh["menu.download"], "下载 HTML"); assert.equal(dictionaries.dictionaries.en["menu.download"], "Download HTML"); });
 
 // D. component behaviour: one native trigger plus a body-level menu
@@ -413,11 +413,11 @@ ok("D5 trigger click opens the menu", () => {
 	assert.equal(live.body.children.length, 1);
 	assert.equal(triggerOf(tree).props["aria-expanded"], true);
 });
-ok("D3 three items in preview/download/pick order, enabled", () => {
+ok("D3 five items in preview/download/pick/publish/connect order, enabled", () => {
 	const entries = entriesOf(live);
-	assert.deepEqual(host(entries.map((entry) => entry.getAttribute("role"))), ["menuitem", "menuitem", "menuitem"]);
-	assert.deepEqual(host(entries.map((entry) => entry.textContent)), [t("menu.preview"), t("menu.download"), t("menu.pick")]);
-	assert.deepEqual(host(entries.map((entry) => entry.getAttribute("disabled"))), [null, null, null]);
+	assert.deepEqual(host(entries.map((entry) => entry.getAttribute("role"))), ["menuitem", "menuitem", "menuitem", "menuitem", "menuitem"]);
+	assert.deepEqual(host(entries.map((entry) => entry.textContent)), [t("menu.preview"), t("menu.download"), t("menu.pick"), t("menu.publishHost"), t("menu.connect")]);
+	assert.deepEqual(host(entries.map((entry) => entry.getAttribute("disabled"))), [null, null, null, null, null]);
 });
 ok("D4 menu is viewport-anchored under the trigger and visible", () => {
 	const menu = menuNodeOf(live);
@@ -439,7 +439,7 @@ live.platform.objectUrls.length = 0;
 queuePreview("<html><body>shared</body></html>");
 clickEntry(live, 0);
 const busyTree = live.hooks.render(props);
-ok("D6 busy disables every item while previewing", () => assert.deepEqual(host(entriesOf(live).map((entry) => entry.getAttribute("disabled"))), ["disabled", "disabled", "disabled"]));
+ok("D6 busy disables every item while previewing", () => assert.deepEqual(host(entriesOf(live).map((entry) => entry.getAttribute("disabled"))), ["disabled", "disabled", "disabled", "disabled", "disabled"]));
 assert.equal(typeof busyTree, "object");
 await flush();
 await flush();
@@ -498,13 +498,13 @@ await flush();
 tree = live.hooks.render(props);
 ok("D12 failure shows locale error plus HTTP status inside the menu", () => {
 	const entries = entriesOf(live);
-	assert.equal(entries.length, 4);
-	const notice = entries[3];
+	assert.equal(entries.length, 6);
+	const notice = entries[5];
 	assert.equal(notice.className, "_shareHtml_error");
 	assert.equal(notice.getAttribute("role"), "status");
 	assert.equal(notice.textContent, t("error.failed") + " (HTTP 500)");
 });
-ok("D13 failure keeps every action enabled again", () => assert.deepEqual(host(entriesOf(live).slice(0, 3).map((entry) => entry.getAttribute("disabled"))), [null, null, null]));
+ok("D13 failure keeps every action enabled again", () => assert.deepEqual(host(entriesOf(live).slice(0, 5).map((entry) => entry.getAttribute("disabled"))), [null, null, null, null, null]));
 ok("D13b a failed preview degrades to a direct download", () => {
 	assert.equal(live.anchors.length, 1);
 	assert.equal(live.anchors[0].tagName, "A");
@@ -519,7 +519,7 @@ try { live.hooks.render({ ...props, sessionId: "sess-2" }); } catch (error) { th
 resetTree = live.hooks.render({ ...props, sessionId: "sess-2" });
 ok("D14 sessionId change clears the failure state", () => {
 	assert.equal(thrown, null);
-	assert.deepEqual(host(entriesOf(live).map((entry) => entry.textContent)), [t("menu.preview"), t("menu.download"), t("menu.pick")]);
+	assert.deepEqual(host(entriesOf(live).map((entry) => entry.textContent)), [t("menu.preview"), t("menu.download"), t("menu.pick"), t("menu.publishHost"), t("menu.connect")]);
 	assert.equal(triggerOf(resetTree).props["aria-expanded"], true);
 });
 ok("D15 no dialog and no alert used", () => { assert.equal(/alert\(/.test(source), false); });
@@ -544,12 +544,12 @@ ok("E2 fallback trigger is a real button with the locale label", () => {
 });
 childrenOf(degradedTree)[0].props.onClick();
 degradedTree = degraded.hooks.render(props);
-ok("E3 fallback menu exposes the three locale actions", () => {
+ok("E3 fallback menu exposes the five locale actions", () => {
 	const container = degraded.body.children[0];
 	assert.equal(container.className, "_shareHtml_portal");
 	const menuNode = container.children[0];
 	assert.equal(menuNode.getAttribute("role"), "menu");
-	assert.deepEqual(host(menuNode.children.map((entry) => entry.textContent)), [t("menu.preview"), t("menu.download"), t("menu.pick")]);
+	assert.deepEqual(host(menuNode.children.map((entry) => entry.textContent)), [t("menu.preview"), t("menu.download"), t("menu.pick"), t("menu.publishHost"), t("menu.connect")]);
 });
 
 // F. stylesheet injection contract
@@ -710,7 +710,7 @@ ok("J2 open menu appends exactly one portal container to document.body", () => {
 	const menuNode = container.children[0];
 	assert.equal(menuNode.className, "_shareHtml_menu");
 	assert.equal(menuNode.getAttribute("role"), "menu");
-	assert.deepEqual(host(menuNode.children.map((item) => item.textContent)), [t("menu.preview"), t("menu.download"), t("menu.pick")]);
+	assert.deepEqual(host(menuNode.children.map((item) => item.textContent)), [t("menu.preview"), t("menu.download"), t("menu.pick"), t("menu.publishHost"), t("menu.connect")]);
 });
 ok("J3 the menu is anchored under the trigger and right aligned", () => {
 	const menuNode = menuEnv.body.children[0].children[0];
@@ -779,8 +779,8 @@ ok("J11 a failed preview keeps the menu open and reports inside it", () => {
 	const container = menuEnv.body.children[0];
 	assert.equal(container.className, "_shareHtml_portal");
 	const menuNode = container.children[0];
-	assert.equal(menuNode.children.length, 4);
-	const notice = menuNode.children[3];
+	assert.equal(menuNode.children.length, 6);
+	const notice = menuNode.children[5];
 	assert.equal(notice.className, "_shareHtml_error");
 	assert.equal(notice.getAttribute("role"), "status");
 	assert.equal(notice.textContent, t("error.failed") + " (HTTP 500)");
@@ -938,8 +938,8 @@ await flush();
 pTree = previewEnv.hooks.render(previewProps);
 ok("L8 an unreadable document reports the error and degrades to a download", () => {
 	const entries = entriesOf(previewEnv);
-	assert.equal(entries.length, 4);
-	const notice = entries[3];
+	assert.equal(entries.length, 6);
+	const notice = entries[5];
 	assert.equal(notice.className, "_shareHtml_error");
 	assert.equal(notice.textContent.startsWith(t("error.failed") + " ("), true);
 	assert.equal(notice.textContent.includes("boom"), true);
@@ -1011,7 +1011,7 @@ ok("M2 the mount decision and mount line report the facts needed to debug", () =
 	assert.equal(mounted.detail.right, "96px");
 	assert.equal(mounted.detail.width, 190);
 	assert.equal(mounted.detail.height, 64);
-	assert.equal(mounted.detail.entries, 3);
+	assert.equal(mounted.detail.entries, 5);
 });
 ok("M3 a zero-size menu warns that the stylesheet may be missing", () => {
 	const zeroEnv = loadWith(fetchStub);
@@ -1272,7 +1272,7 @@ queueIndex([entryOf("m7", "user", "只有一条")]);
 buttonClick(entriesOf(cancelWave.env)[2]);
 pickTree = cancelWave.env.hooks.render(cancelWave.envProps);
 pickTree = await settle(cancelWave.env, cancelWave.envProps);
-buttonClick(pickParts(cancelWave.env).footer.children[1]);
+buttonClick(pickParts(cancelWave.env).footer.children.filter((button) => button.textContent === t("picker.cancel"))[0]);
 pickTree = cancelWave.env.hooks.render(cancelWave.envProps);
 ok("N12 cancel drops the picker layer without touching the document", () => {
 	assert.equal(cancelWave.env.body.children.length, 0);
