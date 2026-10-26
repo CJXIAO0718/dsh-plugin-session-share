@@ -13,7 +13,7 @@
     "server": "node server/main.mjs",
     "test:api": "node server/test/api-test.mjs",
     "demo:build": "node scripts/build-demo.mjs",
-    "test:resources": "node --test server/test/resources.test.mjs",
+    "test:resources": "node --test server/test/resources.test.mjs server/test/maintenance.test.mjs",
     "test": "npm run test:api && npm run test:resources"
   },
   "dependencies": {

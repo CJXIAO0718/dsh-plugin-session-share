@@ -134,7 +134,7 @@ async function save(): Promise<void> {
         <label class="policy-row">
           <span class="policy-label">
             链接保留
-            <small>到期后地址停止返回内容</small>
+            <small>到期后停止访问，再过 7 天自动永久清理</small>
           </span>
           <span class="policy-input">
             <select v-model.number="draft.retentionDays" :disabled="saving">
@@ -190,6 +190,7 @@ async function save(): Promise<void> {
     <p v-else-if="snapshotWarning" class="policy-warning">单份快照上限高于每人配额，请先调整这两项。</p>
     <p v-else class="policy-note">
       修改保留期后，已有记录的到期时间会按新策略重新计算；已经撤回的记录不会自动恢复。
+      到期满 7 天的记录会自动永久删除，已清理的记录无法恢复；永久保留的记录不受影响。
     </p>
   </section>
 </template>

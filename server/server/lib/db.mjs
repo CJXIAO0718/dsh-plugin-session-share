@@ -81,6 +81,7 @@ CREATE TABLE IF NOT EXISTS shares (
 );
 CREATE INDEX IF NOT EXISTS idx_shares_owner ON shares(owner_id);
 CREATE INDEX IF NOT EXISTS idx_shares_created ON shares(created_at);
+CREATE INDEX IF NOT EXISTS idx_shares_cleanup_expiry ON shares(expires_at, id) WHERE expires_at IS NOT NULL;
 CREATE INDEX IF NOT EXISTS idx_shares_owner_created_live ON shares(owner_id, created_at DESC) WHERE deleted_at IS NULL;
 CREATE INDEX IF NOT EXISTS idx_shares_created_live ON shares(created_at DESC) WHERE deleted_at IS NULL;
 CREATE TABLE IF NOT EXISTS audit (

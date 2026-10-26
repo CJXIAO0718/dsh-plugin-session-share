@@ -23,6 +23,7 @@ import { registerTokenRoutes } from './routes/tokens.mjs'
 import { registerShareRoutes } from './routes/shares.mjs'
 import { registerMeRoutes } from './routes/me.mjs'
 import { registerAdminRoutes } from './routes/admin.mjs'
+import { pruneExpiredShares } from './lib/maintenance.mjs'
 
 const here = dirname(fileURLToPath(import.meta.url))
 
@@ -262,7 +263,11 @@ export function startServer(options = {}) {
   server.headersTimeout = 15_000
   server.timeout = 30_000
   server.keepAliveTimeout = 5_000
-  const cleanup = () => pruneExpiredSessions(db)
+  const cleanup = () => {
+    pruneExpiredSessions(db)
+    const result = pruneExpiredShares(db)
+    if (result.deleted) console.log(`[margin] expired-share cleanup: ${result.deleted} snapshots, ${result.bytes} bytes`)
+  }
   cleanup()
   const maintenance = setInterval(() => {
     try { cleanup() } catch (error) { console.error('[margin] session cleanup failed:', error.message) }

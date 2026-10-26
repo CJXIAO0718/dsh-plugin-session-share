@@ -20,7 +20,7 @@ npm install
 npm run dev           # mock 模式开发服务器 http://127.0.0.1:4173
 npm run build:deploy  # 生产构建（remote 模式）并移除演示数据 → dist/
 npm start             # 启动托管服务（默认 127.0.0.1:8787，直出 dist/ + API）
-npm test             # 61 项 API + 5 组资源/整合测试（临时库、临时端口）
+npm test             # 61 项 API + 9 组资源/整合/自动清理测试（临时库、临时端口）
 ```
 
 `npm start` 首次启动会创建管理员：用户名默认 `admin`，密码取 `MARGIN_ADMIN_PASSWORD`，缺省时自动生成并只在启动日志出现一次。常用环境变量见 [docs/HOSTING.md](docs/HOSTING.md)。

@@ -183,7 +183,7 @@ function toggleShare(share: MyShare): void {
             本地预览：撤回与恢复只影响本页列表；示例阅读页始终可打开。接入服务端后，撤回会真正切断地址。
           </p>
           <p v-else class="account-footnote">
-            撤回后地址立即停止返回内容；保留期结束后，记录会自动不可读。删除则在阅读页完成，且不可恢复。
+              撤回后地址立即停止返回内容；到期后记录不可读，满 7 天自动永久清理。主动删除可在阅读页完成，且不可恢复。
           </p>
         </main>
 
@@ -226,7 +226,7 @@ function toggleShare(share: MyShare): void {
             <p class="account-panel-kicker">ABOUT REVOKING</p>
             <p class="account-policy-note">
               撤回不是删除，也不会改变已经读过的内容。它只让地址不再返回记录；
-              保留期结束后，记录会自动停止访问。
+              保留期结束后，记录会自动停止访问，再过 7 天自动永久清理。
             </p>
           </section>
 
