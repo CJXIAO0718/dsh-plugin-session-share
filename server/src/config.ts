@@ -2,9 +2,10 @@
 // 生产默认 remote、开发默认 mock；部署脚本强制 remote。
 export type AuthMode = 'mock' | 'remote'
 
-export const AUTH_MODE: AuthMode = import.meta.env.VITE_AUTH_MODE === 'mock' ? 'mock' : (import.meta.env.PROD ? 'remote' : 'mock')
+export const REMOTE_MODE = import.meta.env.VITE_AUTH_MODE === 'remote'
+  || (import.meta.env.VITE_AUTH_MODE !== 'mock' && import.meta.env.PROD)
 
-export const REMOTE_MODE = AUTH_MODE === 'remote'
+export const AUTH_MODE: AuthMode = REMOTE_MODE ? 'remote' : 'mock'
 
 export const API_BASE: string = (import.meta.env.VITE_API_BASE as string | undefined) ?? '/api/v1'
 

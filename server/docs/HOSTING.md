@@ -33,7 +33,7 @@ location / {
 
 `margin-data` 卷保存 `/app/data/margin.db` 及 WAL/SHM 文件。更新镜像不会重置账号或快照。**不要执行 `down -v`**，那会删除持久数据卷。
 
-当前验证状态：Compose 配置解析通过；本轮本机 Docker 引擎未启动，镜像构建、容器启动和卷权限仍需在有 Docker 引擎的环境验证。Node 本地构建与 API/资源边界测试已经通过，结果见 [RESOURCE-REVIEW.md](RESOURCE-REVIEW.md)。
+验证状态：Compose 配置解析、Node 生产构建、API 与资源/清理测试通过；使用预构建前端的独立 Node 24 运行镜像已验证启动、持久数据目录权限、HTTPS 合成发布链路和实际清理定时器。本文件的完整多阶段 Dockerfile 尚未逐层构建验证。结果及限制见 [RESOURCE-REVIEW.md](RESOURCE-REVIEW.md)。
 
 ## 直接运行 Node
 

@@ -62,6 +62,7 @@ check("no external scheme", () => { assert.equal((html.match(/https?:\/\//g) ?? 
 check("finished html doc", () => { assert.ok(html.trimEnd().endsWith("</html>")); });
 
 const out = path.join(here, "out/e2e-session-share.html");
+fs.mkdirSync(path.dirname(out), { recursive: true });
 fs.writeFileSync(out, html, "utf8");
 const stats = { routeBytes: Buffer.byteLength(html), out };
 

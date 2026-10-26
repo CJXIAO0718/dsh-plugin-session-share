@@ -265,7 +265,7 @@ GET /api/session.shareJson?sessionId=<id>&pick=m12,m13
 - 返回 `{ schema: "dsh.session-share/v1", document }`，`document` 含 `title`、`source`、`counts`、`turns`（消息 + 上下文/推理/工具旁注）、`internal`、`warnings`。
 - 脱敏、截断、`reasoning` 模式、`pick` 全部在返回前完成；路由仍是本机 owner 会话，**不是公开链接**。
 - 实现位于 `lib/snapshot.js`，HTML 分享页继续由 `lib/render.js` 生成；两者共享事件归一化与脱敏逻辑。
-- `document` 的字段约定见托管仓库的 `docs/API.md` 与 `public/api/openapi.yaml`。
+- `document` 的字段约定见本仓库的 [`server/docs/API.md`](server/docs/API.md) 与 [`server/public/api/openapi.yaml`](server/public/api/openapi.yaml)。
 
 ### 6）发布到边注托管服务（主机地址 + 个人令牌）
 
@@ -285,7 +285,7 @@ GET /api/session.shareJson?sessionId=<id>&pick=m12,m13
 
 **行为与边界：**
 
-- 主机地址与令牌只保存在**当前浏览器的 localStorage**（键 `dsh-session-share-connection`），不会写进分享页、日志或 URL。
+- 连接设置会保存到本机 `$DSH_HOME/session-share/settings.json`（令牌同文件，权限 `0600`），浏览器也保留 localStorage 缓存（键 `dsh-session-share-connection`）。设置接口不回传令牌明文；令牌不写进分享页、日志或 URL。
 - 插件不直接访问第三方网络：浏览器调用本机同源路由，再由本机进程请求你填写的主机；因此不需要给边注配置 CORS。
 - 主机返回的错误会原样带回来（令牌无效、超出大小、限流等），菜单里显示可读原因；发布失败不会影响本机预览与下载。
 - 相关路由：`POST /api/session.publishHost`（发布）、`POST /api/session.probeHost`（连接测试）。两者都只接受本机已登录的 owner 会话。

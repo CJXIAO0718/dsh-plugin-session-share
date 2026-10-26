@@ -3,6 +3,7 @@ import type { AdminOverview, AdminUser, AdminUserStatus } from '../admin/types'
 import { DEFAULT_SETTINGS, type HostSettings } from '../admin/settings'
 import type { InviteCode } from '../auth/inviteTypes'
 import { adminBusy, adminOverview, adminOverviewRef } from './adminStore'
+import { REMOTE_MODE } from '../config'
 
 export interface AdminClient {
   readonly mode: 'mock' | 'remote'
@@ -21,7 +22,7 @@ export interface AdminClient {
 }
 
 // 构建期决定 mock / remote；生产构建只加载 remote 适配器。
-const USE_REMOTE = import.meta.env.VITE_AUTH_MODE === 'remote'
+const USE_REMOTE = REMOTE_MODE
 
 let clientPromise: Promise<AdminClient> | null = null
 

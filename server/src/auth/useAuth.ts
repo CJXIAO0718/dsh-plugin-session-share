@@ -1,6 +1,7 @@
 import { computed, reactive, readonly } from 'vue'
 import type { AuthClient, AuthUser, LoginInput, RegisterInput } from './types'
 import { refreshPolicy } from '../admin/settings'
+import { REMOTE_MODE } from '../config'
 
 interface AuthState {
   user: AuthUser | null
@@ -16,7 +17,7 @@ export const authState = reactive<AuthState>({
 
 // 构建期决定 mock / remote；两条适配器都按需加载，
 // 生产构建（VITE_AUTH_MODE=remote）里 mock 实现与演示凭据不会进入代码图。
-const USE_REMOTE = import.meta.env.VITE_AUTH_MODE === 'remote'
+const USE_REMOTE = REMOTE_MODE
 
 let clientPromise: Promise<AuthClient> | null = null
 
