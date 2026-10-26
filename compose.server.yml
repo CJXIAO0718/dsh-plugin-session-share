@@ -1,0 +1,31 @@
+services:
+  margin:
+    build:
+      context: .
+      dockerfile: server/Dockerfile
+    init: true
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:${MARGIN_PORT:-8787}:8787"
+    environment:
+      MARGIN_BASE_URL: ${MARGIN_BASE_URL:-http://localhost:8787}
+      MARGIN_ADMIN_USERNAME: ${MARGIN_ADMIN_USERNAME:-admin}
+      MARGIN_ADMIN_PASSWORD: ${MARGIN_ADMIN_PASSWORD:-}
+      MARGIN_DB_PATH: /app/data/margin.db
+      MARGIN_SECURE_COOKIES: ${MARGIN_SECURE_COOKIES:-}
+    volumes:
+      - margin-data:/app/data
+    read_only: true
+    tmpfs:
+      - /tmp:size=16m,noexec,nosuid
+    mem_limit: 512m
+    cpus: 1.0
+    pids_limit: 64
+    stop_grace_period: 15s
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+volumes:
+  margin-data:

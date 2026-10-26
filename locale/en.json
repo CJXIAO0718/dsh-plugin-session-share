@@ -1,6 +1,6 @@
 {
   "meta": {
     "title": "Session Share HTML",
-    "description": "Share a session as a single-file HTML page served by an authenticated read-only route."
+    "description": "Share a session as single-file HTML, or publish it to a MARGIN host with a host address and personal token."
   }
 }

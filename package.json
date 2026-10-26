@@ -55,5 +55,9 @@
   "bugs": {
     "url": "https://github.com/CJXIAO0718/dsh-plugin-session-share/issues"
   },
-  "author": "CJXIAO0718 (https://github.com/CJXIAO0718)"
+  "author": "CJXIAO0718 (https://github.com/CJXIAO0718)",
+  "scripts": {
+    "build:server": "npm --prefix server run build:deploy",
+    "test:server": "npm --prefix server test"
+  }
 }

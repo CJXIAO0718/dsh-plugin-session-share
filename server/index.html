@@ -1,0 +1,27 @@
+<!doctype html>
+<html lang="zh-CN" data-theme="auto">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="color-scheme" content="light dark" />
+    <meta name="description" content="边注：邀请制的 DSH 会话托管。把会话整理成可读、可核查、可撤回的只读地址；邀请码注册，个人令牌连接本地 DSH。" />
+    <link
+      rel="icon"
+      href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' fill='%23f2efe7'/%3E%3Cpath d='M8 5.5h17v21H8z' fill='none' stroke='%231d211c' stroke-width='1.6'/%3E%3Cpath d='M13.5 5.5v21' stroke='%23a83a24' stroke-width='2'/%3E%3Cpath d='M17 11h5M17 15h5M17 19h3.5' stroke='%2362685d' stroke-width='1.4'/%3E%3C/svg%3E"
+    />
+    <title>边注 · 会话存档托管</title>
+    <script>
+      ;(() => {
+        try {
+          const saved = localStorage.getItem('margin-theme')
+          const mode = saved === 'light' || saved === 'dark' ? saved : 'auto'
+          if (mode !== 'auto') document.documentElement.dataset.theme = mode
+        } catch {}
+      })()
+    </script>
+  </head>
+  <body>
+    <div id="app"></div>
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>
