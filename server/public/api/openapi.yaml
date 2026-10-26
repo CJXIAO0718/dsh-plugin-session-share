@@ -1,0 +1,602 @@
+openapi: 3.1.0
+info:
+  title: 边注托管 API
+  version: "1.0.0"
+  description: |
+    边注（MARGIN）原生会话快照托管接口。
+
+    DSH 插件在本地解析、脱敏、选择，然后发布一份 `dsh.session-share/v1`
+    SnapshotDocument。服务端只校验、存储与分发，不接受 HTML，也不接收原始事件流。
+    发布与删除使用账号的个人访问令牌（mgn_tk_…）；管理员不逐条撤回记录。
+  contact:
+    name: dsh-plugin-session-share
+    url: https://github.com/CJXIAO0718/dsh-plugin-session-share
+servers:
+  - url: /api/v1
+    description: 同源部署的托管 API
+security: []
+tags:
+  - name: shares
+    description: 原生会话快照
+paths:
+  /shares:
+    post:
+      tags: [shares]
+      summary: 发布一份原生快照
+      description: |
+        接收插件生成的原生快照 bundle。服务端不解析事件流、不渲染 HTML、不重新脱敏。
+        所有者由个人令牌推断；响应不返回一次性管理凭据。
+      operationId: createShare
+      security:
+        - personalToken: []
+      requestBody:
+        required: true
+        content:
+          application/vnd.dsh.session-share+json:
+            schema:
+              $ref: "#/components/schemas/CreateShareRequest"
+      responses:
+        "201":
+          description: 快照已创建
+          headers:
+            Cache-Control:
+              $ref: "#/components/headers/NoStore"
+            X-Content-Type-Options:
+              $ref: "#/components/headers/NoSniff"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CreateShareResponse"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "413":
+          $ref: "#/components/responses/PayloadTooLarge"
+        "422":
+          $ref: "#/components/responses/Unprocessable"
+        "429":
+          $ref: "#/components/responses/RateLimited"
+  /shares/{id}:
+    parameters:
+      - $ref: "#/components/parameters/ShareId"
+    get:
+      tags: [shares]
+      summary: 读取摘要与原生文档
+      description: |
+        公开读取，不要求 token；ID 不可枚举。返回入库时的摘要与文档。
+      operationId: getShare
+      responses:
+        "200":
+          description: 快照与文档
+          headers:
+            Cache-Control:
+              $ref: "#/components/headers/NoStore"
+            X-Content-Type-Options:
+              $ref: "#/components/headers/NoSniff"
+          content:
+            application/vnd.dsh.session-share+json:
+              schema:
+                $ref: "#/components/schemas/ShareSnapshot"
+        "404":
+          $ref: "#/components/responses/NotFound"
+    delete:
+      tags: [shares]
+      summary: 删除快照
+      description: 删除文档与原始 JSON。重复删除或不存在返回 404。
+      operationId: deleteShare
+      security:
+        - personalToken: []
+      responses:
+        "204":
+          description: 已删除
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+  /shares/{id}/snapshot:
+    parameters:
+      - $ref: "#/components/parameters/ShareId"
+    get:
+      tags: [shares]
+      summary: 下载原始快照 bundle
+      description: |
+        返回可保存、可迁移、可重新发布的 bundle。响应必须带 attachment 与 nosniff。
+      operationId: getShareSnapshot
+      responses:
+        "200":
+          description: 原始 bundle
+          headers:
+            Content-Disposition:
+              description: attachment; filename="session-share-<id>.json"
+              schema:
+                type: string
+              example: attachment; filename="session-share-7q2m9x4k8p3v6c1n.json"
+            Cache-Control:
+              $ref: "#/components/headers/NoStore"
+            X-Content-Type-Options:
+              $ref: "#/components/headers/NoSniff"
+          content:
+            application/vnd.dsh.session-share+json:
+              schema:
+                $ref: "#/components/schemas/ShareBundle"
+        "404":
+          $ref: "#/components/responses/NotFound"
+components:
+  securitySchemes:
+    personalToken:
+      type: http
+      scheme: bearer
+      bearerFormat: mgn_tk_…
+      description: 账号在边注「连接与令牌」里生成的个人令牌；服务端只存哈希。
+  parameters:
+    ShareId:
+      name: id
+      in: path
+      required: true
+      description: 服务端生成、不可枚举的快照 ID。
+      schema:
+        type: string
+        pattern: "^[a-z2-7]{16,32}$"
+        example: 7q2m9x4k8p3v6c1n
+  headers:
+    NoStore:
+      description: 不进入共享缓存。
+      schema:
+        type: string
+      example: private, no-store
+    NoSniff:
+      description: 禁止内容类型嗅探。
+      schema:
+        type: string
+      example: nosniff
+  responses:
+    BadRequest:
+      description: 请求体或字段不合法
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
+    Unauthorized:
+      description: 缺少或无效的凭据
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
+    Forbidden:
+      description: 令牌没有 manage 权限，或不属于该记录
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
+    NotFound:
+      description: 快照不存在，或已过期、已删除
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
+    PayloadTooLarge:
+      description: 原生快照超过站点策略设置的大小上限
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
+    Unprocessable:
+      description: schema 不受支持或文档结构不合法
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
+    RateLimited:
+      description: 发布超过站点策略的上传节奏
+      headers:
+        Retry-After:
+          description: 建议的重试等待秒数
+          schema:
+            type: integer
+            minimum: 1
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
+  schemas:
+    CreateShareRequest:
+      type: object
+      required: [schema, document]
+      additionalProperties: false
+      properties:
+        schema:
+          type: string
+          const: dsh.session-share/v1
+        document:
+          $ref: "#/components/schemas/SnapshotDocument"
+    CreateShareResponse:
+      type: object
+      required: [share, warnings]
+      properties:
+        share:
+          $ref: "#/components/schemas/ShareSummary"
+        warnings:
+          type: array
+          items:
+            type: string
+    ShareSnapshot:
+      type: object
+      required: [share, document]
+      properties:
+        share:
+          $ref: "#/components/schemas/ShareSummary"
+        document:
+          $ref: "#/components/schemas/SnapshotDocument"
+    ShareBundle:
+      type: object
+      required: [schema, document]
+      additionalProperties: false
+      properties:
+        schema:
+          type: string
+          const: dsh.session-share/v1
+        document:
+          $ref: "#/components/schemas/SnapshotDocument"
+    ShareSummary:
+      type: object
+      required:
+        - id
+        - url
+        - title
+        - createdAt
+        - source
+        - counts
+        - visibility
+        - expiresAt
+        - snapshotBytes
+      properties:
+        id:
+          type: string
+          pattern: "^[a-z2-7]{16,32}$"
+        url:
+          type: string
+          format: uri
+        title:
+          type: string
+          minLength: 1
+        createdAt:
+          type: string
+          format: date-time
+        source:
+          $ref: "#/components/schemas/ShareSource"
+        counts:
+          $ref: "#/components/schemas/ShareCounts"
+        visibility:
+          type: string
+          enum: [unlisted, public]
+          default: unlisted
+        expiresAt:
+          type: [string, "null"]
+          format: date-time
+        snapshotBytes:
+          type: integer
+          minimum: 1
+        owner:
+          type: object
+          properties:
+            id:
+              type: string
+            username:
+              type: string
+    ShareSource:
+      type: object
+      required: [generator, sessionId, redacted]
+      properties:
+        generator:
+          type: string
+          example: DSH session share
+        pluginVersion:
+          type: string
+          example: 0.1.0
+        sessionId:
+          type: string
+          example: session-fe32c8c1
+        generatedAt:
+          type: string
+          example: 2026-10-25 23:14 UTC
+        generatedAtIso:
+          type: string
+          format: date-time
+        sessionCreatedAt:
+          type: string
+          format: date-time
+        preset:
+          type: [string, "null"]
+          example: standard
+        cwd:
+          type: [string, "null"]
+          example: "%USERPROFILE%\\audio-lab"
+        reasoning:
+          type: string
+          enum: [omit, count, full]
+        redacted:
+          type: boolean
+    ShareCounts:
+      type: object
+      required:
+        - turns
+        - userMessages
+        - contextMessages
+        - assistantMessages
+        - toolCalls
+        - redactions
+        - events
+      properties:
+        turns:
+          type: integer
+          minimum: 0
+        userMessages:
+          type: integer
+          minimum: 0
+        contextMessages:
+          type: integer
+          minimum: 0
+        assistantMessages:
+          type: integer
+          minimum: 0
+        toolCalls:
+          type: integer
+          minimum: 0
+        collapsedBlocks:
+          type: integer
+          minimum: 0
+        redactions:
+          type: integer
+          minimum: 0
+        badLines:
+          type: integer
+          minimum: 0
+        events:
+          type: integer
+          minimum: 0
+        picked:
+          type: integer
+          minimum: 0
+        totalEntries:
+          type: integer
+          minimum: 0
+    SnapshotDocument:
+      type: object
+      required:
+        - schemaVersion
+        - title
+        - source
+        - counts
+        - turns
+        - internal
+        - emptySelection
+        - warnings
+      additionalProperties: true
+      properties:
+        schemaVersion:
+          type: integer
+          const: 1
+        title:
+          type: string
+          minLength: 1
+        source:
+          $ref: "#/components/schemas/ShareSource"
+        counts:
+          $ref: "#/components/schemas/ShareCounts"
+        turns:
+          type: array
+          items:
+            $ref: "#/components/schemas/Turn"
+        internal:
+          oneOf:
+            - $ref: "#/components/schemas/InternalEvents"
+            - type: "null"
+        emptySelection:
+          type: boolean
+          default: false
+        warnings:
+          type: array
+          items:
+            type: string
+    Turn:
+      type: object
+      required: [id, number, label, messages, apparatus, reasoningOmitted]
+      properties:
+        id:
+          type: string
+        number:
+          type: integer
+          minimum: 1
+        label:
+          type: string
+          example: 第 01 轮
+        messages:
+          type: array
+          items:
+            $ref: "#/components/schemas/Message"
+        apparatus:
+          type: array
+          items:
+            $ref: "#/components/schemas/Apparatus"
+        reasoningOmitted:
+          oneOf:
+            - $ref: "#/components/schemas/ReasoningOmitted"
+            - type: "null"
+    Message:
+      type: object
+      required: [id, role, name, markdown]
+      properties:
+        id:
+          type: string
+        role:
+          type: string
+          enum: [user, assistant]
+        name:
+          type: string
+          example: 你
+        markdown:
+          type: string
+          description: 源文 Markdown，不由服务端渲染。
+    ReasoningOmitted:
+      type: object
+      required: [count]
+      properties:
+        count:
+          type: integer
+          minimum: 1
+    Apparatus:
+      oneOf:
+        - $ref: "#/components/schemas/ContextEntry"
+        - $ref: "#/components/schemas/ReasoningEntry"
+        - $ref: "#/components/schemas/ToolEntry"
+      discriminator:
+        propertyName: type
+        mapping:
+          context: "#/components/schemas/ContextEntry"
+          reasoning: "#/components/schemas/ReasoningEntry"
+          tool: "#/components/schemas/ToolEntry"
+    ContextEntry:
+      type: object
+      required: [id, type, index, chars, reason, text]
+      properties:
+        id:
+          type: string
+        type:
+          type: string
+          const: context
+        index:
+          type: integer
+          minimum: 1
+        chars:
+          type: integer
+          minimum: 0
+        reason:
+          type: string
+          minLength: 1
+        text:
+          type: string
+          description: 内联上下文原文，不按 Markdown 渲染。
+    ReasoningEntry:
+      type: object
+      required: [id, type, index, chars, markdown]
+      properties:
+        id:
+          type: string
+        type:
+          type: string
+          const: reasoning
+        index:
+          type: integer
+          minimum: 1
+        chars:
+          type: integer
+          minimum: 0
+        markdown:
+          type: string
+    ToolEntry:
+      type: object
+      required:
+        - id
+        - type
+        - index
+        - name
+        - summary
+        - meta
+        - error
+        - args
+        - result
+        - argsTruncated
+        - resultTruncated
+        - noResult
+      properties:
+        id:
+          type: string
+        type:
+          type: string
+          const: tool
+        index:
+          type: integer
+          minimum: 1
+        name:
+          type: string
+        summary:
+          type: string
+        meta:
+          type: string
+        error:
+          type: boolean
+        args:
+          type: string
+          description: 参数原文；可能按 ARGS_LIMIT 截断。
+        result:
+          type: string
+          description: 结果原文；可能按 RESULT_LIMIT 截断。
+        argsTruncated:
+          oneOf:
+            - $ref: "#/components/schemas/Truncation"
+            - type: "null"
+        resultTruncated:
+          oneOf:
+            - $ref: "#/components/schemas/Truncation"
+            - type: "null"
+        noResult:
+          type: boolean
+          description: 为真时表示没有配对的 tool/result 事件。
+    Truncation:
+      type: object
+      required: [shown, original]
+      properties:
+        shown:
+          type: integer
+          minimum: 0
+        original:
+          type: integer
+          minimum: 1
+    InternalEvents:
+      type: object
+      required: [count, events]
+      properties:
+        count:
+          type: integer
+          minimum: 0
+        events:
+          type: array
+          items:
+            type: object
+            required: [type, count]
+            properties:
+              type:
+                type: string
+              count:
+                type: integer
+                minimum: 1
+        note:
+          type: [string, "null"]
+    ErrorResponse:
+      type: object
+      required: [error]
+      properties:
+        error:
+          type: object
+          required: [code, message]
+          properties:
+            code:
+              type: string
+              enum:
+                - invalid_json
+                - unauthorized
+                - forbidden
+                - not_found
+                - payload_too_large
+                - unsupported_schema
+                - invalid_snapshot
+                - rate_limited
+            message:
+              type: string
+            details:
+              type: array
+              items:
+                type: string

@@ -1,0 +1,37 @@
+{
+  "name": "margin-host",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "description": "边注托管服务：单进程 API、SQLite 与前端静态托管",
+  "scripts": {
+    "dev": "vite --host 127.0.0.1 --port 4173",
+    "build": "vue-tsc --noEmit && vite build",
+    "build:deploy": "node scripts/build-deploy.mjs",
+    "preview": "vite preview --host 127.0.0.1 --port 4174",
+    "start": "node server/main.mjs",
+    "server": "node server/main.mjs",
+    "test:api": "node server/test/api-test.mjs",
+    "demo:build": "node scripts/build-demo.mjs",
+    "test:resources": "node --test server/test/resources.test.mjs",
+    "test": "npm run test:api && npm run test:resources"
+  },
+  "dependencies": {
+    "gsap": "^3.15.0",
+    "highlight.js": "^11.12.0",
+    "katex": "^0.16.47",
+    "markdown-it": "^14.3.3",
+    "vue": "^3.5.44",
+    "vue-router": "^4.6.4"
+  },
+  "devDependencies": {
+    "@types/markdown-it": "^14.2.0",
+    "@vitejs/plugin-vue": "^5.2.4",
+    "typescript": "^5.9.3",
+    "vite": "^6.4.5",
+    "vue-tsc": "^2.2.12"
+  },
+  "engines": {
+    "node": ">=24.0.0"
+  }
+}

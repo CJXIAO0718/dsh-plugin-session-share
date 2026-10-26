@@ -176,7 +176,7 @@ DSH 的市场服务只读你配置的 `indexes`（默认空数组，空着时一
 
 ---
 
-## 四种用法
+## 用法
 
 | 用法 | 怎么做 | 适合 |
 | --- | --- | --- |
@@ -184,6 +184,7 @@ DSH 的市场服务只读你配置的 `indexes`（默认空数组，空着时一
 | `/share` 命令 | 在输入框敲 `/share`（可加 `download`） | 想快速在本机打开或下载 |
 | 离线 CLI | `node tools/render-session.mjs --log <日志> --out <out.html>` | 批量、脚本、AI 调用、无桌面端 |
 | 挑选部分对话 | 分享菜单第三项「选择对话后分享…」勾几条 → 预览 / 下载；或 CLI `--pick m12,m13` | 会话很长，只想发其中一两句 |
+| 发布到边注 | 分享菜单 →「发布到边注…」；首次先填「连接设置…」 | 已部署边注托管服务，想要一个只读链接 |
 
 ### 1）会话头部按钮
 
@@ -192,9 +193,14 @@ DSH 的市场服务只读你配置的 `indexes`（默认空数组，空着时一
 ### 2）`/share` 命令
 
 ```
-/share            生成【本机】预览地址（只能在这台机器、这个已登录的浏览器里打开）
-/share download   生成【本机】下载地址（把文件存下来后，文件本身才可以发给别人）
+/share            按「连接设置」里选的默认行为执行（出厂：本机预览地址）
+/share preview    临时改成【本机】预览地址（只能在这台机器、这个已登录的浏览器里打开）
+/share download   临时改成【本机】下载地址（把文件存下来后，文件本身才可以发给别人）
+/share publish    临时改成直接发布到边注（需要先在「连接设置」里填主机地址与个人令牌）
 ```
+
+- 默认行为在分享菜单 →「连接设置…」顶部的「Share 命令默认行为」三选一里改，保存在本机 `$DSH_HOME/session-share/settings.json`（令牌同文件，权限 0600，接口不回传令牌）。
+- 命令里带的模式只覆盖这一次；不写就用默认行为。
 
 ### 3）离线 CLI（AI 可调用）
 
@@ -248,6 +254,42 @@ node tools/render-session.mjs --log session.v4.jsonl.zstd --out out.html --pick 
 - 端口路由同理：`GET /api/session.shareIndex` 返回 `{ sessionId, title, total, entries }`；`GET|HEAD /api/session.shareHtml?...&pick=` 里非法项会被丢弃、最多 500 项。
 - 只挑选条目不改变其它规则：某轮只要有 ≥1 条被选中的消息，这一轮的内联上下文灰卡与工具调用行**仍然照旧出现**（否则整轮不出现）；脱敏、折叠、`--reasoning` 全部照旧。
 
+### 5）原生快照 JSON（供托管前端）
+
+托管阅读器不解析导出的 HTML，而是消费插件在本地整理好的 `SnapshotDocument`。同一条选择/脱敏/推理规则在这里复用：
+
+```http
+GET /api/session.shareJson?sessionId=<id>&pick=m12,m13
+```
+
+- 返回 `{ schema: "dsh.session-share/v1", document }`，`document` 含 `title`、`source`、`counts`、`turns`（消息 + 上下文/推理/工具旁注）、`internal`、`warnings`。
+- 脱敏、截断、`reasoning` 模式、`pick` 全部在返回前完成；路由仍是本机 owner 会话，**不是公开链接**。
+- 实现位于 `lib/snapshot.js`，HTML 分享页继续由 `lib/render.js` 生成；两者共享事件归一化与脱敏逻辑。
+- `document` 的字段约定见托管仓库的 `docs/API.md` 与 `public/api/openapi.yaml`。
+
+### 6）发布到边注托管服务（主机地址 + 个人令牌）
+
+如果已经部署了边注托管服务，可以让插件把本地整理好的原生快照直接发布过去，拿到一个只读地址。
+
+**首次连接：**
+
+1. 在边注网页登录，打开「我的分享 → 连接与令牌」，生成一枚个人令牌（完整值只显示一次）。
+2. 回到 DSH，打开任意会话，点头部的分享按钮 →「连接设置…」。
+3. 填入主机地址（例如 `https://margin.example.com`）和个人令牌，点「保存并测试」。
+
+**发布：**
+
+- 分享菜单 →「发布到边注…」。
+- 插件会把会话整理成 `dsh.session-share/v1` 快照，经本机路由 `POST /api/session.publishHost` 转交给主机。
+- 成功后显示只读地址，可复制或打开；地址会同时出现在边注的「我的分享」里。
+
+**行为与边界：**
+
+- 主机地址与令牌只保存在**当前浏览器的 localStorage**（键 `dsh-session-share-connection`），不会写进分享页、日志或 URL。
+- 插件不直接访问第三方网络：浏览器调用本机同源路由，再由本机进程请求你填写的主机；因此不需要给边注配置 CORS。
+- 主机返回的错误会原样带回来（令牌无效、超出大小、限流等），菜单里显示可读原因；发布失败不会影响本机预览与下载。
+- 相关路由：`POST /api/session.publishHost`（发布）、`POST /api/session.probeHost`（连接测试）。两者都只接受本机已登录的 owner 会话。
+
 ---
 
 ## 配置项
@@ -270,7 +312,17 @@ node tools/render-session.mjs --log session.v4.jsonl.zstd --out out.html --pick 
 
 离线 CLI 用 `--no-redact` 关闭脱敏，用 `--title` 覆盖标题。
 
-另外暴露：路由 `GET /api/session.shareHtml`（支持 `&pick=m12,m13`、`&download=1`）、路由 `GET /api/session.shareIndex`（挑选浮层的条目列表）、命令 `/share`、工具 `share_conversation_html`（写文件到会话 cwd 下的 `.dsh-share/`）。
+另外暴露：路由 `GET /api/session.shareHtml`（支持 `&pick=m12,m13`、`&download=1`）、路由 `GET /api/session.shareIndex`（挑选浮层的条目列表）、路由 `GET /api/session.shareJson`（原生快照 bundle，供托管前端）、路由 `GET|POST /api/session.shareSettings`（读写 `/share` 默认行为与边注主机/令牌，响应里永远不含令牌明文）、命令 `/share`、工具 `share_conversation_html`（写文件到会话 cwd 下的 `.dsh-share/`）。
+
+### `/share` 默认行为（本机设置，不进 `config`）
+
+「连接设置…」顶部三个按钮对应 `preview` / `download` / `publish`，写进 `$DSH_HOME/session-share/settings.json`：
+
+```json
+{ "commandDefault": "preview", "host": "https://margin.example.com", "token": "mgn_tk_..." }
+```
+
+`commandDefault` 决定裸 `/share` 的行为；`/share download`、`/share publish` 只覆盖当次。非法值返回 400 `invalid_mode`，主机地址非法返回 400 `invalid_host`，空字段不会抹掉已存值。
 
 ---
 
@@ -325,17 +377,17 @@ node tools/render-session.mjs --log session.v4.jsonl.zstd --out out.html --pick 
 |---|---|---|
 | 读文件 / 读会话 | Host 半包读取当前会话事件（经 DSH 的 `sessionQuery` / `sessionPersistence` 服务） | 只读，只读**当前会话**，不遍历其他会话、不读外部目录 |
 | 写文件 | ① agent 工具 `share_conversation_html` 把 HTML 写到 `<会话 cwd>/.dsh-share/`；② `install.ps1` 写 profile 的 `cordis.patch.yml`（写前自动备份） | 仅这两处，路径固定且可预测；不写系统目录、不写注册表 |
-| 网络 | 客户端 `fetch` 调用**本机同源**路由 `/api/session.shareHtml`、`/api/session.shareIndex` | 只连 localhost 的本 DSH 进程；**不访问任何第三方服务、不上传任何内容、无遥测** |
+| 网络 | ① 客户端 `fetch` 调用**本机同源**路由 `/api/session.shareHtml`、`/api/session.shareIndex`、`/api/session.shareJson`、`/api/session.publishHost`、`/api/session.probeHost`；② 本机路由在你点击「发布到边注」或「保存并测试」时，请求你填写的主机地址 | 不点击发布就不发起外部请求；不访问市场索引、不遥测、不向其他第三方发送内容 |
 
 ### 外部服务
 
-**无。** 页面渲染完全在本机完成；生成物是自包含 HTML（无 CDN、无字体、无外部请求）。市场索引 `market/index.json` 只是分发用，不被插件在运行时访问。
+**只有你自己配置的边注托管服务。** 本机渲染、预览、下载完全离线；只有在「连接设置 → 保存并测试」或「发布到边注」时，本机进程才会请求那个地址。市场索引 `market/index.json` 只用于分发，不被插件在运行时访问。
 
 ### 失败边界
 
 - 读不到会话：返回 404 短文本，不抛栈、不泄漏本机路径。
 - 渲染异常：返回 500 短文本，`console.warn` 记一条，会话本身不受影响。
-- 上传/网络类操作**不存在**；若客户端 `fetch` 失败，菜单内显示错误并退化为本机直下载。
+- 发布失败（主机不可达、令牌无效、超出大小、限流）：本机路由返回结构化错误，界面显示可读原因；本机预览与下载仍可用。
 - 客户端半包加载失败**会导致 web boot 拒绝启动**（已在文首「已知致命风险」说明与应急步骤），这是 DSH 的机制，不是本插件额外请求权限。
 
 ## 隐私警告（请务必读）
@@ -353,7 +405,7 @@ node tools/render-session.mjs --log session.v4.jsonl.zstd --out out.html --pick 
 - 只在 Windows + PowerShell 5.1 上验证过这两个 `*.ps1`；它们**必须保存为 UTF-8 with BOM**，否则 5.1 会按 ANSI 解码中文而报语法错误。
 - `.zstd` 解码依赖 Node 内置 zstd（Node >= 22.15 才有 `zlib.zstdDecompressSync`）；Node 20 上只能喂未压缩的 `.jsonl`。CLI 遇到无 zstd 的 Node 会直接给出中文提示。
 - 桌面端运行中，`dsh --profile desktop --dump-config` 会被拒绝（`profile is managed exclusively by the Electron application`）；这不是配置错误，插件页看到 `phase=active` 即可。
-- **不提供公开分享链接**：插件只产出 HTML 文件。`/share` 返回的地址是本机回环地址、且 `/api/*` 需要已登录的 owner 会话，**把它发给别人打不开**。要发给别人，请用「下载」拿到 `.html` 文件再发送。
+- **本机分享不提供公开链接**：`/share` 返回的地址是本机回环地址、且 `/api/*` 需要已登录的 owner 会话，**把它发给别人打不开**。要发给别人，可以用「下载」拿到 `.html` 文件，或在「连接设置」里配置边注主机后用「发布到边注」获得只读链接。
 - 分享页是静态快照：生成之后会话再变化不会自动更新。
 - 子代理正文不展开：内部事件（ptc 派发、subagent 目录等）只按类型计数折叠。
 - 主题跟随系统的能力取决于浏览器 `prefers-color-scheme`。
@@ -457,6 +509,7 @@ dsh-plugin-session-share/
 │  ├─ index.js              # 插件在 DSH 内的注册（命令、路由、工具）
 │  ├─ client.js             # 会话头部「分享为 HTML」按钮（load id 必须=包名）
 │  ├─ render.js             # 事件流 → 单文件 HTML（零依赖）
+│  ├─ snapshot.js           # 事件流 → 原生 SnapshotDocument（托管前端使用）
 │  └─ redact.js             # 脱敏规则
 ├─ tools/
 │  ├─ render-session.mjs    # 离线 CLI（支持多帧 zstd / jsonl）
@@ -478,3 +531,13 @@ stdout 一行 JSON，`bytes` 应在数百 KB 量级；`stats.redacted > 0` 说�
 .\install.ps1 -ProfileDir '<临时 profile 目录>' -PluginDir '<含 lib\index.js 的目录>' -WhatIf
 .\restore-if-broken.ps1 -ProfileDir '<临时 profile 目录>' -ListOnly
 ```
+
+## 自建边注 Server
+
+本仓库的 `server/` 提供独立托管应用：一个 Node 进程提供网页、API 与 SQLite 存储。插件仍可离线使用。部署入口和验证结果见 [Server 文档](docs/server.md)。
+
+```bash
+docker compose -f compose.server.yml up -d --build
+```
+
+生产环境先按 [部署文档](server/docs/HOSTING.md) 配置域名、管理员密码与持久数据卷。Server 要求 Node ≥ 24；插件自身保留 Node ≥ 20 的要求，npm 插件包不会携带 Server。

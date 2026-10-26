@@ -1,0 +1,86 @@
+:root {
+  color-scheme: light;
+  --paper: #f2efe7;
+  --paper-raised: #faf8f2;
+  --paper-sunk: #e9e4d7;
+  --ink: #1d211c;
+  --ink-2: #41483d;
+  --ink-3: #62685d;
+  --ink-4: #686e62;
+  --rule: #d4cebf;
+  --rule-strong: #b4ac9a;
+  --accent: #a83a24;
+  --accent-strong: #8c2f1c;
+  --accent-wash: #f1e1d9;
+  --trace: #2d5a5b;
+  --trace-wash: #dfe9e4;
+  --code-bg: #eae5d9;
+  --code-ink: #272c25;
+  --selection: #e8c9b3;
+  --shadow: 34 28 18;
+  --font-display: "Palatino Linotype", "Book Antiqua", Palatino, "Noto Serif SC", "Songti SC", "STSong", "SimSun", Georgia, serif;
+  --font-body: "Noto Serif SC", "Songti SC", "STSong", "SimSun", Georgia, serif;
+  --font-ui: "Noto Sans SC", "PingFang SC", "Microsoft YaHei", "Segoe UI", system-ui, sans-serif;
+  --font-mono: "Cascadia Code", "Cascadia Mono", Consolas, "SFMono-Regular", Menlo, monospace;
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 24px;
+  --space-6: 32px;
+  --space-7: 48px;
+  --space-8: 64px;
+  --space-9: 96px;
+  --space-10: 128px;
+  --topbar-h: 68px;
+  --radius-sm: 2px;
+  --radius-md: 4px;
+  --ease-out: cubic-bezier(0.18, 0.72, 0.22, 1);
+  --ease-soft: cubic-bezier(0.32, 0.72, 0, 1);
+}
+
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --paper: #151814;
+  --paper-raised: #1b1f19;
+  --paper-sunk: #10130f;
+  --ink: #e9e5d8;
+  --ink-2: #c3c1b2;
+  --ink-3: #94988a;
+  --ink-4: #8b9283;
+  --rule: #30362d;
+  --rule-strong: #4d5547;
+  --accent: #e07a5d;
+  --accent-strong: #ef9a7f;
+  --accent-wash: #2b1d17;
+  --trace: #8db9b0;
+  --trace-wash: #192825;
+  --code-bg: #10130f;
+  --code-ink: #dad6c8;
+  --selection: #4b3327;
+  --shadow: 0 0 0;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root[data-theme="auto"] {
+    color-scheme: dark;
+    --paper: #151814;
+    --paper-raised: #1b1f19;
+    --paper-sunk: #10130f;
+    --ink: #e9e5d8;
+    --ink-2: #c3c1b2;
+    --ink-3: #94988a;
+    --ink-4: #8b9283;
+    --rule: #30362d;
+    --rule-strong: #4d5547;
+    --accent: #e07a5d;
+    --accent-strong: #ef9a7f;
+    --accent-wash: #2b1d17;
+    --trace: #8db9b0;
+    --trace-wash: #192825;
+    --code-bg: #10130f;
+    --code-ink: #dad6c8;
+    --selection: #4b3327;
+    --shadow: 0 0 0;
+  }
+}
