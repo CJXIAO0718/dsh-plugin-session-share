@@ -3,6 +3,7 @@ import { computed } from 'vue'
 import { RouterLink } from 'vue-router'
 import { copyText } from '../lib/clipboard'
 import { useToast } from '../composables/useToast'
+import { HOST_URL } from '../config'
 
 const props = withDefaults(defineProps<{ signedIn?: boolean; host?: string }>(), {
   signedIn: false,
@@ -10,7 +11,7 @@ const props = withDefaults(defineProps<{ signedIn?: boolean; host?: string }>(),
 })
 
 const toast = useToast()
-const hostLabel = computed(() => props.host || (typeof window !== 'undefined' ? window.location.origin : 'https://margin.example.com'))
+const hostLabel = computed(() => props.host || HOST_URL)
 
 async function copyHost(): Promise<void> {
   const ok = await copyText(hostLabel.value)

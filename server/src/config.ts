@@ -7,3 +7,6 @@ export const AUTH_MODE: AuthMode = import.meta.env.VITE_AUTH_MODE === 'mock' ? '
 export const REMOTE_MODE = AUTH_MODE === 'remote'
 
 export const API_BASE: string = (import.meta.env.VITE_API_BASE as string | undefined) ?? '/api/v1'
+
+// Use the deployed site's origin in connection instructions; no private domain in source.
+export const HOST_URL: string = typeof window !== 'undefined' ? window.location.origin : ''

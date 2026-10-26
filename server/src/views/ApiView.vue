@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import CodeBlock from '../components/CodeBlock.vue'
+import { HOST_URL } from '../config'
 
 const clientContract = `export interface ShareReader {
   readonly mode: 'local' | 'remote'
@@ -58,7 +59,7 @@ const createResponse = `201 Created
 {
   "share": {
     "id": "7q2m9x4k8p3v6c1n",
-    "url": "https://s.example/s/7q2m9x4k8p3v6c1n",
+    "url": "${HOST_URL}/s/7q2m9x4k8p3v6c1n",
     "title": "采样率之外：一次鼓组重采样的频谱体检",
     "createdAt": "2026-10-25T15:14:06.000Z",
     "source": { "generator": "DSH session share", "sessionId": "session-fe32c8c1" },

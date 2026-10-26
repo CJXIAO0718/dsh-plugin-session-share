@@ -3,7 +3,7 @@ import { computed } from 'vue'
 import { RouterLink } from 'vue-router'
 import ConnectGuide from '../components/ConnectGuide.vue'
 import { useAuth } from '../auth/useAuth'
-import { REMOTE_MODE } from '../config'
+import { HOST_URL, REMOTE_MODE } from '../config'
 
 const { state } = useAuth()
 const signedIn = computed(() => Boolean(state.user))
@@ -16,9 +16,9 @@ const showDemo = !REMOTE_MODE
     <section class="connect-hero container">
       <div class="connect-hero-copy">
         <p class="account-kicker"><span></span>PLUGIN / CONNECT</p>
-        <h1>把 DSH 接到边注，<br /><em>只需要两步。</em></h1>
+        <h1>把 DSH 接到边注，<br /><em>只需要三步。</em></h1>
         <p class="connect-lede">
-          生成一枚个人令牌，在插件里填入主机地址与令牌。之后，会话头部会多出「发布到边注」；
+          生成一枚个人令牌，在插件里填入主机地址与令牌，然后选择「发布到边注」。
           整理、脱敏和选择仍然发生在你的机器上。
         </p>
         <div class="home-actions">
@@ -49,7 +49,7 @@ const showDemo = !REMOTE_MODE
         </div>
         <div class="connect-slip-rule"></div>
         <p class="connect-slip-label">主机地址</p>
-        <code class="connect-slip-host">margin.example.com</code>
+        <code class="connect-slip-host">{{ HOST_URL }}</code>
         <p class="connect-slip-label">个人令牌</p>
         <code class="connect-slip-token">mgn_tk_••••••••e41c</code>
         <div class="connect-slip-status">
