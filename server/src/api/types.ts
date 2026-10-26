@@ -13,6 +13,7 @@ export interface ShareSummary {
   expiresAt: string | null
   snapshotBytes: number
   demo?: boolean
+  canManage?: boolean
 }
 
 export interface ShareSnapshot {

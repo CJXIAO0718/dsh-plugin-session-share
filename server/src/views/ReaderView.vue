@@ -46,6 +46,7 @@ const redactions = computed(() => counts.value?.redactions)
 const picked = computed(() => counts.value?.picked)
 const totalEntries = computed(() => counts.value?.totalEntries)
 const isDemo = computed(() => summary.value?.demo === true)
+const canDelete = computed(() => !isDemo.value && (shareClient.mode === 'local' || summary.value?.canManage === true))
 const warnings = computed(() => doc.value?.warnings ?? [])
 
 const stats = computed(() => {
@@ -559,7 +560,7 @@ onBeforeUnmount(() => {
             </div>
             <div class="aside-fact">
               <dt>可见性</dt>
-              <dd>{{ isDemo ? '示例 · 本地只读' : '仅本机 · 未发布' }}</dd>
+              <dd>{{ shareClient.mode === 'remote' ? '已发布 · 持链接可读' : isDemo ? '示例 · 本地只读' : '仅本机 · 未发布' }}</dd>
             </div>
             <div v-if="picked !== null" class="aside-fact">
               <dt>选择</dt>
@@ -593,9 +594,9 @@ onBeforeUnmount(() => {
             <div class="aside-progress-track"><div class="aside-progress-fill" :style="{ width: `${progress}%` }" /></div>
           </div>
 
-          <template v-if="!isDemo">
+          <template v-if="canDelete">
             <div class="aside-divider" />
-            <button v-if="!confirmingDelete" class="aside-danger" type="button" @click="requestDelete">从本机删除这份存档</button>
+            <button v-if="!confirmingDelete" class="aside-danger" type="button" @click="requestDelete">{{ shareClient.mode === 'remote' ? '删除这份存档' : '从本机删除这份存档' }}</button>
             <div v-else class="aside-confirm">
               <p>删除后无法恢复。确认移除？</p>
               <div>

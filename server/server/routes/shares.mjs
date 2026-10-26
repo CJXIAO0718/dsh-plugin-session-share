@@ -170,7 +170,7 @@ export function registerShareRoutes(router) {
     ctx.db.prepare('UPDATE shares SET views = views + 1 WHERE id = ?').run(row.id)
     const bundle = JSON.parse(row.json)
     sendJson(ctx.res, 200, {
-      share: summaryFromRow(row, ctx),
+      share: { ...summaryFromRow(row, ctx), canManage: sessionUser(ctx.req, ctx.db)?.user.id === row.owner_id },
       document: bundle.document,
     })
   })
